@@ -49,7 +49,7 @@
     </div>
 
     <script>
-        const BACKEND_URL = "https://ml-trading-assistant.onrender.com"; // Update this with your Render backend URL
+        const BACKEND_URL = "YOUR_RENDER_BACKEND_URL_GOES_HERE"; 
 
         const loadingDiv = document.getElementById('loading');
         const resultsDiv = document.getElementById('results');
@@ -61,7 +61,7 @@
         const priceErrorEl = document.getElementById('priceError');
 
         async function fetchAnalysisData() {
-            if (BACKEND_URL === "YOUR_RENDER_BACKEND_URL_GOES_HERE") {
+            if (BACKEND_URL === "https://ml-trading-assistant.onrender.com") {
                 showError("Please update the BACKEND_URL in the HTML file.");
                 return;
             }
