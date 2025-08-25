@@ -3,94 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ML Trading Assistant</title>
+    <title>AI Trading Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; }
-        .card { background-color: #1e1e1e; border: 1px solid #333; }
-        .glass-pane { background: rgba(40, 40, 40, 0.6); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        body { font-family: 'Inter', sans-serif; background-color: #0d1117; color: #c9d1d9; }
+        .card { background-color: #161b22; border: 1px solid #30363d; }
+        .table-header { background-color: #21262d; }
     </style>
 </head>
-<body class="text-gray-200 flex items-center justify-center min-h-screen p-4">
-    <div class="bg-black p-6 sm:p-8 rounded-2xl shadow-2xl w-full max-w-6xl border border-gray-800">
-        <div class="flex flex-col sm:flex-row justify-between items-center mb-6 pb-4 border-b border-gray-800">
-            <h1 class="text-3xl font-bold text-cyan-400">ML Trading Assistant</h1>
-            <p id="predictionDate" class="text-sm text-gray-500 mt-2 sm:mt-0">Loading latest analysis...</p>
+<body class="flex">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-black p-6 space-y-6 hidden md:flex flex-col">
+        <div class="flex items-center space-x-2">
+            <svg class="w-8 h-8 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <h1 class="text-xl font-bold text-white">AI Assistant</h1>
+        </div>
+        <nav class="space-y-2 flex-1">
+            <a href="#" class="flex items-center space-x-3 px-4 py-2 text-white bg-gray-900 rounded-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                <span>Dashboard</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6 lg:p-10">
+        <header class="flex justify-between items-center mb-8">
+            <h2 class="text-2xl font-bold text-white">Daily Predictions Dashboard</h2>
+            <p id="predictionDate" class="text-sm text-gray-500">Loading...</p>
+        </header>
+
+        <div id="loading" class="text-center py-16">
+            <svg class="animate-spin h-12 w-12 text-cyan-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            <p class="mt-4 text-lg text-gray-400">Fetching latest analysis from the server...</p>
         </div>
 
-        <div id="loading" class="text-center py-8">
-            <svg class="animate-spin h-10 w-10 text-cyan-400 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0, 0, 24, 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <p class="mt-4 text-lg">Fetching latest predictions from the server...</p>
-        </div>
-        
-        <div id="results" class="hidden">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                 <div class="card p-5 rounded-lg glass-pane">
-                    <h2 class="text-sm font-semibold text-gray-400">Directional Accuracy</h2>
-                    <p id="accuracy" class="text-3xl font-bold text-cyan-400">- %</p>
-                    <p id="accuracySubtext" class="text-xs text-gray-500">Based on historical predictions</p>
+        <div id="results" class="hidden space-y-8">
+            <!-- New Performance Section -->
+            <section>
+                <h3 class="text-lg font-semibold text-gray-400 mb-4">Model Performance Breakdown</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="card rounded-lg overflow-hidden">
+                        <table class="w-full text-left text-sm">
+                            <thead class="table-header">
+                                <tr>
+                                    <th class="p-4 font-semibold">Stock</th>
+                                    <th class="p-4 font-semibold">Directional Accuracy</th>
+                                    <th class="p-4 font-semibold">Avg. Price Error</th>
+                                    <th class="p-4 font-semibold">Total Predictions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="performance-table-body">
+                                <!-- Performance rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="card p-6 rounded-lg">
+                        <h4 class="text-sm font-semibold text-gray-400 mb-2">Model Brain: Feature Importance</h4>
+                        <canvas id="featureImportanceChart"></canvas>
+                    </div>
                 </div>
-                <div class="card p-5 rounded-lg glass-pane">
-                    <h2 class="text-sm font-semibold text-gray-400">Avg. Price Error</h2>
-                    <p id="priceError" class="text-3xl font-bold text-cyan-400">₹ -</p>
-                    <p id="priceErrorSubtext" class="text-xs text-gray-500">Avg. difference from actual price</p>
+            </section>
+
+            <!-- Predictions Section -->
+            <section>
+                <h3 class="text-lg font-semibold text-gray-400 mb-4">Today's Stock Predictions</h3>
+                <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <!-- Stock cards will be inserted here -->
                 </div>
-            </div>
-            <div id="dashboard-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Stock cards will be inserted here by JavaScript -->
-            </div>
+            </section>
         </div>
 
-        <div id="error" class="hidden text-red-400 text-center mt-4 p-4 bg-red-900/50 rounded-lg"></div>
-    </div>
+        <div id="error" class="hidden text-red-400 text-center mt-4 p-6 bg-red-900/20 rounded-lg border border-red-500/30"></div>
+    </main>
 
     <script>
-        const BACKEND_URL = "https://ml-trading-assistant.onrender.com"; // Update this to your backend URL
-
-        const loadingDiv = document.getElementById('loading');
-        const resultsDiv = document.getElementById('results');
-        const errorDiv = document.getElementById('error');
-        const dashboardGrid = document.getElementById('dashboard-grid');
-        const predictionDateEl = document.getElementById('predictionDate');
-        const accuracyEl = document.getElementById('accuracy');
-        const accuracySubtextEl = document.getElementById('accuracySubtext');
-        const priceErrorEl = document.getElementById('priceError');
+        const BACKEND_URL = "YOUR_RENDER_BACKEND_URL_GOES_HERE"; 
+        let featureChart = null;
 
         async function fetchAnalysisData() {
             if (BACKEND_URL === "YOUR_RENDER_BACKEND_URL_GOES_HERE") {
-                showError("Please update the BACKEND_URL in the HTML file.");
+                showError("CRITICAL: Please update the BACKEND_URL in the index.html file with your Render service URL.");
                 return;
             }
-
             try {
-                const [predResponse, accResponse, errResponse] = await Promise.all([
+                const [predResponse, perfResponse, importanceResponse] = await Promise.all([
                     fetch(`${BACKEND_URL}/get-latest-predictions`),
-                    fetch(`${BACKEND_URL}/get-accuracy-stats`),
-                    fetch(`${BACKEND_URL}/get-price-error-stats`)
+                    fetch(`${BACKEND_URL}/get-performance-stats`),
+                    fetch(`${BACKEND_URL}/get-feature-importance`)
                 ]);
 
                 if (!predResponse.ok) throw new Error(`Prediction server error: ${predResponse.status}`);
-                if (!accResponse.ok) throw new Error(`Accuracy server error: ${accResponse.status}`);
-                if (!errResponse.ok) throw new Error(`Price error server error: ${errResponse.status}`);
+                if (!perfResponse.ok) throw new Error(`Performance server error: ${perfResponse.status}`);
+                if (!importanceResponse.ok) throw new Error(`Importance server error: ${importanceResponse.status}`);
 
                 const predictions = await predResponse.json();
-                const accuracyData = await accResponse.json();
-                const priceErrorData = await errResponse.json();
-
-                // Handle predictions
+                const performanceData = await perfResponse.json();
+                const importanceData = await importanceResponse.json();
+                
                 if (predictions.error || predictions.length === 0) {
                     showError(predictions.error || "No predictions available. The daily analysis may not have run yet.");
                     return;
                 }
                 
                 predictions.sort((a, b) => a.ticker.localeCompare(b.ticker));
-                predictionDateEl.textContent = `Analysis for: ${new Date(predictions[0].prediction_date).toDateString()}`;
+                document.getElementById('predictionDate').textContent = `Analysis for: ${new Date(predictions[0].prediction_date).toDateString()}`;
+                
+                const dashboardGrid = document.getElementById('dashboard-grid');
                 dashboardGrid.innerHTML = '';
-
                 predictions.forEach(pred => {
                     const isUpward = pred.ml_direction_signal === 'UPWARD';
                     const isBullish = pred.trend_signal === 'Bullish';
@@ -98,20 +121,22 @@
                     const predictedPrice = parseFloat(pred.predicted_price);
                     
                     const card = `
-                        <div class="card p-5 rounded-lg glass-pane">
-                            <h2 class="text-xl font-bold text-white">${pred.ticker}</h2>
-                            <p class="text-sm text-gray-400 mb-4">Last Close: ₹${lastClose.toFixed(2)}</p>
-                            <div class="space-y-3">
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-semibold text-gray-500">ML DIRECTION</span>
-                                    <span class="font-bold ${isUpward ? 'text-green-400' : 'text-red-400'}">${pred.ml_direction_signal}</span>
+                        <div class="card p-6 rounded-lg space-y-4">
+                            <div>
+                                <h4 class="text-xl font-bold text-white">${pred.ticker}</h4>
+                                <p class="text-sm text-gray-400">Last Close: ₹${lastClose.toFixed(2)}</p>
+                            </div>
+                            <div class="border-t border-gray-700 pt-4 space-y-3">
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-400">ML Direction</span>
+                                    <span class="font-bold px-2 py-1 rounded ${isUpward ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}">${pred.ml_direction_signal}</span>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-semibold text-gray-500">PRICE PREDICTION</span>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-400">Price Prediction</span>
                                     <span class="font-bold ${predictedPrice > lastClose ? 'text-green-400' : 'text-red-400'}">₹${predictedPrice.toFixed(2)}</span>
                                 </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-xs font-semibold text-gray-500">TREND SIGNAL</span>
+                                <div class="flex justify-between items-center text-sm">
+                                    <span class="text-gray-400">Trend Signal</span>
                                     <span class="font-bold ${isBullish ? 'text-green-400' : 'text-red-400'}">${pred.trend_signal}</span>
                                 </div>
                             </div>
@@ -120,15 +145,25 @@
                     dashboardGrid.innerHTML += card;
                 });
 
-                // Handle accuracy stats
-                accuracyEl.textContent = `${accuracyData.accuracy} %`;
-                accuracySubtextEl.textContent = `Based on ${accuracyData.total_predictions} historical predictions`;
-                
-                // Handle price error stats
-                priceErrorEl.textContent = `₹ ${priceErrorData.avg_error}`;
+                const perfTableBody = document.getElementById('performance-table-body');
+                perfTableBody.innerHTML = '';
+                for (const ticker in performanceData) {
+                    const stats = performanceData[ticker];
+                    const row = `
+                        <tr class="border-t border-gray-700">
+                            <td class="p-4 font-bold">${ticker}</td>
+                            <td class="p-4 text-cyan-400">${stats.accuracy}%</td>
+                            <td class="p-4">₹${stats.avg_error}</td>
+                            <td class="p-4 text-gray-400">${stats.total_predictions}</td>
+                        </tr>
+                    `;
+                    perfTableBody.innerHTML += row;
+                }
 
-                loadingDiv.style.display = 'none';
-                resultsDiv.style.display = 'block';
+                renderFeatureImportance(importanceData);
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
 
             } catch (err) {
                 console.error("Failed to fetch analysis data:", err);
@@ -136,11 +171,44 @@
             }
         }
 
+        function renderFeatureImportance(data) {
+            const ctx = document.getElementById('featureImportanceChart').getContext('2d');
+            const labels = Object.keys(data);
+            const values = Object.values(data);
+
+            if (featureChart) {
+                featureChart.destroy();
+            }
+
+            featureChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Importance',
+                        data: values,
+                        backgroundColor: 'rgba(56, 189, 248, 0.5)',
+                        borderColor: 'rgba(56, 189, 248, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(156, 163, 175, 0.1)' } },
+                        y: { ticks: { color: '#9ca3af' }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+        
         function showError(message) {
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-            loadingDiv.style.display = 'none';
-            resultsDiv.style.display = 'none';
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
         }
 
         window.addEventListener('DOMContentLoaded', fetchAnalysisData);
