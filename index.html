@@ -45,7 +45,7 @@
             <!-- New Performance Section -->
             <section>
                 <h3 class="text-lg font-semibold text-gray-400 mb-4">Model Performance Breakdown</h3>
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 gap-6">
                     <div class="card rounded-lg overflow-hidden">
                         <table class="w-full text-left text-sm">
                             <thead class="table-header">
@@ -61,10 +61,12 @@
                             </tbody>
                         </table>
                     </div>
+                    <!--
                     <div class="card p-6 rounded-lg">
                         <h4 class="text-sm font-semibold text-gray-400 mb-2">Model Brain: Feature Importance</h4>
                         <canvas id="featureImportanceChart"></canvas>
                     </div>
+                    -->
                 </div>
             </section>
 
@@ -82,7 +84,7 @@
 
     <script>
         const BACKEND_URL = "https://ml-trading-assistant.onrender.com"; 
-        let featureChart = null;
+        // let featureChart = null; // Commented out as it's not used now
 
         async function fetchAnalysisData() {
             if (BACKEND_URL === "YOUR_RENDER_BACKEND_URL_GOES_HERE") {
@@ -90,19 +92,19 @@
                 return;
             }
             try {
-                const [predResponse, perfResponse, importanceResponse] = await Promise.all([
+                const [predResponse, perfResponse] = await Promise.all([
                     fetch(`${BACKEND_URL}/get-latest-predictions`),
                     fetch(`${BACKEND_URL}/get-performance-stats`),
-                    fetch(`${BACKEND_URL}/get-feature-importance`)
+                    // fetch(`${BACKEND_URL}/get-feature-importance`) // Commented out
                 ]);
 
                 if (!predResponse.ok) throw new Error(`Prediction server error: ${predResponse.status}`);
                 if (!perfResponse.ok) throw new Error(`Performance server error: ${perfResponse.status}`);
-                if (!importanceResponse.ok) throw new Error(`Importance server error: ${importanceResponse.status}`);
+                // if (!importanceResponse.ok) throw new Error(`Importance server error: ${importanceResponse.status}`);
 
                 const predictions = await predResponse.json();
                 const performanceData = await perfResponse.json();
-                const importanceData = await importanceResponse.json();
+                // const importanceData = await importanceResponse.json();
                 
                 if (predictions.error || predictions.length === 0) {
                     showError(predictions.error || "No predictions available. The daily analysis may not have run yet.");
@@ -147,7 +149,9 @@
 
                 const perfTableBody = document.getElementById('performance-table-body');
                 perfTableBody.innerHTML = '';
-                for (const ticker in performanceData) {
+                const sortedTickers = Object.keys(performanceData).sort();
+                
+                for (const ticker of sortedTickers) {
                     const stats = performanceData[ticker];
                     const row = `
                         <tr class="border-t border-gray-700">
@@ -160,7 +164,7 @@
                     perfTableBody.innerHTML += row;
                 }
 
-                renderFeatureImportance(importanceData);
+                // renderFeatureImportance(importanceData);
                 
                 document.getElementById('loading').style.display = 'none';
                 document.getElementById('results').style.display = 'block';
@@ -170,7 +174,7 @@
                 showError("Could not connect to the analysis server. Please check the URL or try again later.");
             }
         }
-
+        /*
         function renderFeatureImportance(data) {
             const ctx = document.getElementById('featureImportanceChart').getContext('2d');
             const labels = Object.keys(data);
@@ -204,7 +208,7 @@
                 }
             });
         }
-        
+        */
         function showError(message) {
             document.getElementById('error').textContent = message;
             document.getElementById('error').style.display = 'block';
